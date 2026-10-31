@@ -84,14 +84,23 @@ public final class AdUI {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         if (poster) {
+            // Exact size from the bitmap's own ratio: the whole image is always visible (no crop).
+            int iw = Math.max(1, image.getWidth());
+            int ih = Math.max(1, image.getHeight());
+            int maxH = (int) (dm.heightPixels * 0.60f);
+            int viewW = cardW;
+            int viewH = Math.round(cardW * (float) ih / (float) iw);
+            if (viewH > maxH) {
+                viewH = maxH;
+                viewW = Math.round(maxH * (float) iw / (float) ih);
+            }
             ImageView iv = new ImageView(act);
-            iv.setAdjustViewBounds(true);
-            iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            iv.setMaxHeight((int) (dm.heightPixels * 0.60f));
-            iv.setImageBitmap(roundTop(image, dp(20) * image.getWidth() / (float) cardW));
+            iv.setScaleType(ImageView.ScaleType.FIT_XY);
+            iv.setImageBitmap(roundTop(image, dp(20) * iw / (float) viewW));
             if (c.title.length() > 0) iv.setContentDescription(c.title);
-            col.addView(iv, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(viewW, viewH);
+            ilp.gravity = Gravity.CENTER_HORIZONTAL;
+            col.addView(iv, ilp);
             addButtons(col, dp(16), dp(16), dp(16), dp(16));
         } else {
             int pad = dp(24);
@@ -331,4 +340,4 @@ public final class AdUI {
             return src;
         }
     }
-}
+    }
