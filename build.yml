@@ -1,0 +1,27 @@
+name: Build RemoteAd
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Locate Android SDK tools
+        run: |
+          JAR=$(ls -d $ANDROID_HOME/platforms/android-*/android.jar | sort -V | tail -1)
+          D8=$(ls -d $ANDROID_HOME/build-tools/*/d8 | sort -V | tail -1)
+          echo "ANDROID_JAR=$JAR" >> $GITHUB_ENV
+          echo "D8=$D8" >> $GITHUB_ENV
+      - name: Fetch baksmali
+        run: curl -fsSL -o baksmali.jar https://repo1.maven.org/maven2/org/smali/baksmali/2.5.2/baksmali-2.5.2.jar
+      - name: Build
+        run: BAKSMALI_JAR=$PWD/baksmali.jar bash build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RemoteAd-build
+          path: |
+            out/classes.dex
+            smali/
